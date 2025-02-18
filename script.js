@@ -2,16 +2,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("trainingForm");
     const tableBody = document.getElementById("dataTable");
 
-    // Handle Form Submission
+
+        // Get deleted rows from localStorage
+        // let deletedRows = JSON.parse(localStorage.getItem("deletedRows")) || [];
+
     if (form) {
-        form.addEventListener("submit", function (event) {
+        form.addEventListener("submit", async function (event) {
             event.preventDefault();
 
-            let storedData = JSON.parse(localStorage.getItem("formData")) || [];
-
             let formData = {
-                srNo: storedData.length + 1, // Auto-increment Serial Number
-             
                 calendar: document.getElementById("calendar").value,
                 trainerName: document.getElementById("trainerName").value,
                 otherTrainer: document.getElementById("otherTrainer").value,
@@ -22,103 +21,134 @@ document.addEventListener("DOMContentLoaded", function () {
                 trainingTopic: document.getElementById("trainingTopic").value,
                 Location: document.getElementById("Location").value,
                 referenceNo: document.getElementById("referenceNo").value,
-                employeeCode: document.getElementById("employeeCode").value
+                employeeCode: document.getElementById("employeeCode").value,
+                
             };
 
-            storedData.push(formData);
-            localStorage.setItem("formData", JSON.stringify(storedData));
+            try {
+                const response = await fetch("http://localhost:5000/submit-form", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData)
+                });
 
-            alert("Form submitted successfully!");
-            form.reset();
-            renderTable(); // Reload table without refreshing page
+                if (response.ok) {
+                    alert("Form submitted successfully!");
+                    form.reset();
+                    fetchTableData(); // Reload table with only new data
+                } else {
+                    alert("Error submitting form.");
+                }
+            } catch (error) {
+                console.error(error);
+            }
         });
     }
 
-    // Function to Render Table
-    function renderTable() {
-        let storedData = JSON.parse(localStorage.getItem("formData")) || [];
-        tableBody.innerHTML = ""; // Clear table before adding data
+    async function fetchTableData() {
+        try {
+            const response = await fetch("http://localhost:5000/get-data");
+            const data = await response.json();
 
-        storedData.forEach((data, index) => {
-            let row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                
-                <td>${data.calendar}</td>
-                <td>${data.trainerName}</td>
-                <td>${data.otherTrainer}</td>
-                <td>${data.trainingDate}</td>
-                <td>${data.trainingTiming}</td>
-                <td>${data.trainingTimingEnd}</td>
-                <td>${data.trainingHead}</td>
-                <td>${data.trainingTopic}</td>
-                <td>${data.Location}</td>
-                <td>${data.referenceNo}</td>
-                <td>${data.employeeCode}</td>
-                <td><button class="export-btn" data-index="${index}">Export</button></td>
-                
-            `;
-            tableBody.appendChild(row);
-        });
 
-        // Add Event Listeners for Export Buttons
-        document.querySelectorAll(".export-btn").forEach(button => {
-            button.addEventListener("click", function () {
-                let index = this.getAttribute("data-index");
-                exportSingleRow(index);
+
+
+            // Filter out deleted rows
+            // const filteredData = data.filter(entry => !deletedRows.includes(entry.referenceNo));
+            // 🔹 Show only new data by clearing old data first
+
+            tableBody.innerHTML = "";
+
+            data.forEach((entry, index) => {
+                let row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${entry.calendar}</td>
+                    <td>${entry.trainername}</td>
+                    <td>${entry.othertrainer}</td>
+                    <td>${entry.trainingdate}</td>
+                    <td>${entry.trainingtiming}</td>
+                    <td>${entry.trainingtimingend}</td>
+                    <td>${entry.traininghead}</td>
+                    <td>${entry.trainingtopic}</td>
+                    <td>${entry.location}</td>
+                    <td>${entry.referenceno}</td>
+                    <td>${entry.employeecode}</td>
+                     
+                    <td>
+                        <button class="export-btn" data-index="${index}">Export</button>
+                        
+                    </td>
+                `;
+                tableBody.appendChild(row);
             });
-        });
 
-        // Add Event Listeners for Delete Buttons
-        document.querySelectorAll(".delete-btn").forEach(button => {
-            button.addEventListener("click", function () {
-                let index = this.getAttribute("data-index");
-                deleteRow(index);
+            // 🔹 Attach Export Button Event Listeners
+            document.querySelectorAll(".export-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    let index = this.getAttribute("data-index");
+                    exportSingleRow(index);
+                });
             });
-        });
-    }
 
-    // Function to Delete Row with Confirmation
-    function deleteRow(index) {
-        let storedData = JSON.parse(localStorage.getItem("formData")) || [];
-
-        // Show confirmation popup
-        let confirmDelete = confirm("Are you sure you want to delete this row?");
+                    // Attach event listeners for Delete Buttons
+                    // document.querySelectorAll(".delete-btn").forEach(button => {
+                    //     button.addEventListener("click", function () {
+                    //         let referenceNo = this.getAttribute("data-ref");
+                    //         deleteRow(referenceNo);
+                    //     });
+                    // });
         
-        if (confirmDelete) {
-            storedData.splice(index, 1); // Remove the selected row
-            localStorage.setItem("formData", JSON.stringify(storedData)); // Save updated data
-            renderTable(); // Re-render table
+
+        } catch (error) {
+            console.error("Error fetching data:", error);
         }
     }
-// Function to Export Single Row with Employee Code Vertically
-function exportSingleRow(index) {
-    let storedData = JSON.parse(localStorage.getItem("formData")) || [];
-    if (storedData[index]) {
-        let singleData = storedData[index];
+    // function deleteRow(referenceNo) {
+        // Add the deleted referenceNo to localStorage
+        // deletedRows.push(referenceNo);
+        // localStorage.setItem("deletedRows", JSON.stringify(deletedRows));
 
-        // Extract other fields (keep them in the same row)
-        let otherFields = { ...singleData };
-        delete otherFields.employeeCode; // Remove employeeCode for now
+        // Remove row from UI
+    //     fetchTableData();
+    // }
+    function exportSingleRow(index) {
+        let rows = document.querySelectorAll("#dataTable tr");
 
-        // Split Employee Codes into separate rows while keeping other fields intact
-        let employeeCodes = singleData.employeeCode.split(",");
-        let formattedData = employeeCodes.map(code => ({
-            ...otherFields, // Keep other fields the same
-            employeeCode: code.trim() // Add one employee code per row
-        }));
+        if (rows[index]) {
+            let row = rows[index].children;
 
-        let worksheet = XLSX.utils.json_to_sheet(formattedData);
-        let workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Training Data");
-        XLSX.writeFile(workbook, `Training_Data_${index + 1}.xlsx`);
+            let rowData = {
+                calendar: row[1].textContent.trim(),
+                trainerName: row[2].textContent.trim(),
+                otherTrainer: row[3].textContent.trim(),
+                trainingDate: row[4].textContent.trim(),
+                trainingTiming: row[5].textContent.trim(),
+                trainingTimingEnd: row[6].textContent.trim(),
+                trainingHead: row[7].textContent.trim(),
+                trainingTopic: row[8].textContent.trim(),
+                Location: row[9].textContent.trim(),
+                referenceNo: row[10].textContent.trim(),
+                employeeCode: row[11].textContent.trim()
+            };
+
+            let employeeCodes = rowData.employeeCode.split(",");
+            let formattedData = employeeCodes.map(code => ({
+                ...rowData,
+                employeeCode: code.trim()
+            }));
+
+            let worksheet = XLSX.utils.json_to_sheet(formattedData);
+            let workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Training Data");
+            XLSX.writeFile(workbook, `Training_Data_${index + 1}.xlsx`);
+        } else {
+            alert("Invalid row selection!");
+        }
     }
-}
 
-    // Load Table on Page Load
-    renderTable();
+    fetchTableData(); // Load table on page load
 });
-
 
 
 document.getElementById("calendar").addEventListener("change", function () {
@@ -284,3 +314,24 @@ function toggleOtherLocation() {
 
 
 
+  // Logout functionality
+  function logout() {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("role");
+    window.location.href = "login.html";
+}
+
+
+function filterTrainer() {
+    let input = document.getElementById("searchTrainer").value.toLowerCase();
+    let table = document.getElementById("dataTable");
+    let rows = table.getElementsByTagName("tr");
+
+    for (let i = 0; i < rows.length; i++) {
+        let trainerCell = rows[i].getElementsByTagName("td")[2]; // 3rd column (Trainer Name)
+        if (trainerCell) {
+            let trainerName = trainerCell.textContent || trainerCell.innerText;
+            rows[i].style.display = trainerName.toLowerCase().includes(input) ? "" : "none";
+        }
+    }
+}

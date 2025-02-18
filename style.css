@@ -287,3 +287,22 @@ button:hover {
     font-weight: bold;
     cursor: pointer;
 }
+
+
+/* Common styling for both input fields */
+#searchTrainer, #searchMonth {
+    width: 250px;
+    padding: 10px;
+    margin: 10px;
+    border: 2px solid #008089;
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s ease-in-out;
+}
+
+/* Focus effect when clicked */
+#searchTrainer:focus, #searchMonth:focus {
+    border-color: #00c2d0;
+    box-shadow: 0 0 8px rgba(0, 194, 208, 0.5);
+}

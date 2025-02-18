@@ -6,7 +6,6 @@
     <title>Document</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
     
@@ -16,41 +15,38 @@
         <ul>
             <li><a href="index.html">Home</a></li>
             <li><a href="data.html">View Data</a></li>
-           
         </ul>
     </nav>
 
-
-    <body>
-        <h2>Training Form Data</h2>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Sr No</th>
-                    <th>Calendar</th>
-                    <th>Trainer Name</th>
-                    <th>Trainer Name other</th>
-                    <th>Training Date</th>
-                    <th>Training Time</th>
-                    <th>Training End Time</th>
-                    <th>Training Head</th>
-                    <th>Training Topic</th>
-                    <th>Location</th>
-                    <th>Reference No</th>
-                    <th>Employee Code</th>
-                       <th>Export</th>
-                       <!-- <th>Delete</th>  -->
-                </tr>
-            </thead>
-            <tbody id="dataTable"></tbody>
-        </table>
-    
-     
-      
-    
-        <script src="script.js"></script>
+    <h2>Training Form Data</h2>
 
 
-    
+    <!-- Search Filter -->
+    <input type="text" id="searchTrainer" placeholder="Search Trainer Name" onkeyup="filterTrainer()">
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Sr No</th>
+                <th>Calendar</th>
+                <th>Trainer Name</th>
+                <th>Trainer Name Other</th>
+                <th>Training Date</th>
+                <th>Training Time</th>
+                <th>Training End Time</th>
+                <th>Training Head</th>
+                <th>Training Topic</th>
+                <th>Location</th>
+                <th>Reference No</th>
+                <th>Employee Code</th>
+                <th>Export</th>
+            </tr>
+        </thead>
+        <tbody id="dataTable">
+            <!-- Data will be dynamically inserted here -->
+        </tbody>
+    </table>
+
+    <script src="script.js"></script>
 </body>
 </html>
