@@ -1,10 +1,40 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const role = localStorage.getItem("role");
+    const adminLink = document.querySelector("nav ul li a[href='admin.html']");
+
+    if (role !== "admin") {
+        adminLink.style.display = "none"; // Hide the Dashboard link for non-admins
+    }
+});
+
+function logout() {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("role");
+    window.location.href = "login.html";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const role = localStorage.getItem("role"); // Get user role
+    const deleteBtn = document.getElementById("deleteBtn"); // Select the delete button
+
+    // Hide delete button if the user is not an admin
+    if (role !== "admin" && deleteBtn) {
+        deleteBtn.style.display = "none";
+    }
+});
+
+
+
+
+
+// ...............................................................................................................................................
+
+document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("trainingForm");
     const tableBody = document.getElementById("dataTable");
+    
 
 
-        // Get deleted rows from localStorage
-        // let deletedRows = JSON.parse(localStorage.getItem("deletedRows")) || [];
 
     if (form) {
         form.addEventListener("submit", async function (event) {
@@ -22,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 Location: document.getElementById("Location").value,
                 referenceNo: document.getElementById("referenceNo").value,
                 employeeCode: document.getElementById("employeeCode").value,
+                dataEnterBy: document.getElementById("dataEnterBy").value  // Added this line
                 
             };
 
@@ -34,6 +65,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (response.ok) {
                     alert("Form submitted successfully!");
+
+                    // Save the form submission to localStorage
+                    let submissions = JSON.parse(localStorage.getItem("submissions")) || [];
+                    submissions.push(formData);
+                    localStorage.setItem("submissions", JSON.stringify(submissions));
+
                     form.reset();
                     fetchTableData(); // Reload table with only new data
                 } else {
@@ -49,18 +86,15 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const response = await fetch("http://localhost:5000/get-data");
             const data = await response.json();
-
-
-
-
-            // Filter out deleted rows
-            // const filteredData = data.filter(entry => !deletedRows.includes(entry.referenceNo));
-            // 🔹 Show only new data by clearing old data first
-
+            const role = localStorage.getItem("role"); // Get user role
+    
             tableBody.innerHTML = "";
-
+    
             data.forEach((entry, index) => {
+                let employeeCodesArray = entry.employeecode.split(",");
+                let employeeCodesCount = employeeCodesArray.length;
                 let row = document.createElement("tr");
+    
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${entry.calendar}</td>
@@ -73,13 +107,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>${entry.trainingtopic}</td>
                     <td>${entry.location}</td>
                     <td>${entry.referenceno}</td>
-                    <td>${entry.employeecode}</td>
-                     
-                    <td>
-                        <button class="export-btn" data-index="${index}">Export</button>
-                        
-                    </td>
+                    <td>${employeeCodesCount} Codes</td>
+                    <td>${entry.dataenterby}</td>
+                    <td><button class="export-btn" data-index="${index}">Export</button></td>
+                    ${role === "admin" ? `<td><button class="delete-btn" data-id="${entry.id}">Delete</button></td>` : ""}
                 `;
+                
                 tableBody.appendChild(row);
             });
 
@@ -91,60 +124,73 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             });
 
-                    // Attach event listeners for Delete Buttons
-                    // document.querySelectorAll(".delete-btn").forEach(button => {
-                    //     button.addEventListener("click", function () {
-                    //         let referenceNo = this.getAttribute("data-ref");
-                    //         deleteRow(referenceNo);
-                    //     });
-                    // });
-        
+
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    let id = this.getAttribute("data-id");
+                    deleteRow(id);
+                });
+            });
+                  
 
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     }
-    // function deleteRow(referenceNo) {
-        // Add the deleted referenceNo to localStorage
-        // deletedRows.push(referenceNo);
-        // localStorage.setItem("deletedRows", JSON.stringify(deletedRows));
 
-        // Remove row from UI
-    //     fetchTableData();
-    // }
-    function exportSingleRow(index) {
-        let rows = document.querySelectorAll("#dataTable tr");
 
-        if (rows[index]) {
-            let row = rows[index].children;
-
-            let rowData = {
-                calendar: row[1].textContent.trim(),
-                trainerName: row[2].textContent.trim(),
-                otherTrainer: row[3].textContent.trim(),
-                trainingDate: row[4].textContent.trim(),
-                trainingTiming: row[5].textContent.trim(),
-                trainingTimingEnd: row[6].textContent.trim(),
-                trainingHead: row[7].textContent.trim(),
-                trainingTopic: row[8].textContent.trim(),
-                Location: row[9].textContent.trim(),
-                referenceNo: row[10].textContent.trim(),
-                employeeCode: row[11].textContent.trim()
-            };
-
-            let employeeCodes = rowData.employeeCode.split(",");
-            let formattedData = employeeCodes.map(code => ({
-                ...rowData,
-                employeeCode: code.trim()
-            }));
-
-            let worksheet = XLSX.utils.json_to_sheet(formattedData);
-            let workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Training Data");
-            XLSX.writeFile(workbook, `Training_Data_${index + 1}.xlsx`);
-        } else {
-            alert("Invalid row selection!");
+    function deleteRow(id) {
+        if (confirm("Are you sure you want to delete this submission?")) {
+            fetch(`http://localhost:5000/delete-data/${id}`, {
+                method: "DELETE",
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert("Row deleted successfully!");
+                    fetchTableData(); // Refresh table
+                })
+                .catch(error => console.error("Error deleting row:", error));
         }
+    }
+
+
+
+
+    
+  
+    function exportSingleRow(index) {
+        fetch("http://localhost:5000/get-data")
+            .then(response => response.json())
+            .then(data => {
+                let entry = data[index];
+    
+                if (!entry) {
+                    alert("Invalid row selection!");
+                    return;
+                }
+    
+                let employeeCodes = entry.employeecode.split(","); // Get the actual codes
+                let formattedData = employeeCodes.map(code => ({
+                    calendar: entry.calendar,
+                    trainerName: entry.trainername,
+                    otherTrainer: entry.othertrainer,
+                    trainingDate: entry.trainingdate,
+                    trainingTiming: entry.trainingtiming,
+                    trainingTimingEnd: entry.trainingtimingend,
+                    trainingHead: entry.traininghead,
+                    trainingTopic: entry.trainingtopic,
+                    Location: entry.location,
+                    referenceNo: entry.referenceno,
+                    dataenterby: entry.dataenterby,
+                    employeeCode: code.trim() // Each code in a separate row
+                }));
+    
+                let worksheet = XLSX.utils.json_to_sheet(formattedData);
+                let workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Training Data");
+                XLSX.writeFile(workbook, `Training_Data_${index + 1}.xlsx`);
+            })
+            .catch(error => console.error("Error fetching data:", error));
     }
 
     fetchTableData(); // Load table on page load
@@ -335,3 +381,38 @@ function filterTrainer() {
         }
     }
 }
+
+
+
+function filterByMonth() {
+    let monthInput = document.getElementById("calendars").value; 
+    let selectedMonth = new Date(monthInput).toLocaleString('en-us', { month: 'short' }).toLowerCase(); // "feb" for February
+    let table = document.getElementById("dataTable");
+    let rows = table.getElementsByTagName("tr");
+
+    for (let i = 0; i < rows.length; i++) {
+        let referenceCell = rows[i].getElementsByTagName("td")[10]; // 11th column (Reference No)
+        if (referenceCell) {
+            let referenceText = referenceCell.textContent.toLowerCase();
+            rows[i].style.display = referenceText.startsWith(selectedMonth) ? "" : "none";
+        }
+    }
+}
+
+
+
+// Logout functionality
+function logout() {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("role");
+    window.location.href = "login.html";
+  }
+  
+  // Redirect if not logged in
+  if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "login.html";
+  }
+  
+  // Load queries on page load
+  window.onload = loadQueries;
+  

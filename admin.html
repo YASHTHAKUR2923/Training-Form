@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Admin Dashboard</div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="data.html">View Data</a></li>
+            <li id="admin-link"><a href="admin.html">Dashboard</a></li>
+            <li><button onclick="logout()" id="logbtn">Logout</button></li>
+        </ul>
+    </nav>
+
+    <h2>Training Form Submissions Overview</h2>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>Total Submissions</h3>
+            <p id="totalSubmissions">0</p>
+        </div>
+        <div class="card">
+            <h3>Submissions Per Trainer</h3>
+            <ul id="trainerCountList"></ul>
+        </div>
+    </div>
+
+    <canvas id="submissionsChart"></canvas>
+
+    <div class="button-container">
+        <button onclick="deleteAllSubmissions()" id="deleteBtn">
+            Delete All Submissions
+        </button>
+    </div>
+    <script>
+        function loadDashboardData() {
+            let submissions = JSON.parse(localStorage.getItem("submissions")) || [];
+            document.getElementById("totalSubmissions").innerText = submissions.length;
+            
+            let trainerCounts = {};
+            submissions.forEach(sub => {
+                trainerCounts[sub.trainerName] = (trainerCounts[sub.trainerName] || 0) + 1;
+            });
+
+            let trainerList = document.getElementById("trainerCountList");
+            trainerList.innerHTML = "";
+            for (let trainer in trainerCounts) {
+                let li = document.createElement("li");
+                li.innerText = `${trainer}: ${trainerCounts[trainer]}`;
+                trainerList.appendChild(li);
+            }
+
+            let ctx = document.getElementById("submissionsChart").getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: Object.keys(trainerCounts),
+                    datasets: [{
+                        label: "Training Submissions",
+                        data: Object.values(trainerCounts),
+                        backgroundColor: "rgba(54, 162, 235, 0.5)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function deleteAllSubmissions() {
+            if (confirm("Are you sure you want to delete all submissions?")) {
+                localStorage.removeItem("submissions");
+                alert("All submissions deleted successfully!");
+                loadDashboardData();
+            }
+        }
+
+        window.onload = loadDashboardData;
+
+
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+        const role = localStorage.getItem("role");
+
+        if (role !== "admin") {
+            alert("Access Denied! Redirecting to Home Page.");
+            window.location.href = "index.html"; // Redirect non-admin users
+        }
+    });
+    </script>
+
+</body>
+</html>

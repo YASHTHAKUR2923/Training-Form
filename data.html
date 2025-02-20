@@ -11,10 +11,12 @@
     
     <!-- Navigation Bar -->
     <nav>
-        <div class="logo">Training Portal</div>
+        <div class="logo"><h2 style="color: #ffffff;">TRAINING FROM DATA LIST</h2></div>
         <ul>
             <li><a href="index.html">Home</a></li>
             <li><a href="data.html">View Data</a></li>
+            <li><a href="admin.html">Dashboard</a></li>
+          
         </ul>
     </nav>
 
@@ -22,7 +24,11 @@
 
 
     <!-- Search Filter -->
-    <input type="text" id="searchTrainer" placeholder="Search Trainer Name" onkeyup="filterTrainer()">
+    <div class="input-container">
+        <!-- <input type="text" id="searchTrainer" placeholder="Search Trainer Name"> -->
+        
+        <input type="month" id="calendars" required onchange="filterByMonth()">
+    </div>
 
     <table border="1">
         <thead>
@@ -39,14 +45,35 @@
                 <th>Location</th>
                 <th>Reference No</th>
                 <th>Employee Code</th>
+                <th>Data Enter By</th>
                 <th>Export</th>
+                <th>action</th>
+               
             </tr>
         </thead>
         <tbody id="dataTable">
             <!-- Data will be dynamically inserted here -->
         </tbody>
     </table>
+<script>
+    
 
+// Logout functionality
+function logout() {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("role");
+    window.location.href = "login.html";
+  }
+  
+  // Redirect if not logged in
+  if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "login.html";
+  }
+  
+  // Load queries on page load
+  window.onload = loadQueries;
+  
+</script>
     <script src="script.js"></script>
 </body>
 </html>

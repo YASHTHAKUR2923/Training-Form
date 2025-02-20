@@ -288,9 +288,8 @@ button:hover {
     cursor: pointer;
 }
 
-
-/* Common styling for both input fields */
-#searchTrainer, #searchMonth {
+/* Common styling for input fields */
+#searchTrainer, #searchMonth, #calendars {
     width: 250px;
     padding: 10px;
     margin: 10px;
@@ -302,7 +301,67 @@ button:hover {
 }
 
 /* Focus effect when clicked */
-#searchTrainer:focus, #searchMonth:focus {
+#searchTrainer:focus, #searchMonth:focus, #calendars:focus {
     border-color: #00c2d0;
     box-shadow: 0 0 8px rgba(0, 194, 208, 0.5);
+}
+
+
+.dashboard {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px;
+}
+
+.card {
+    background: #04767e;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 30%;
+}
+
+canvas {
+    max-width: 80%;
+    margin: auto;
+    display: block;
+}
+
+
+
+.button-container {
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically (if needed) */
+    margin-top: 20px; /* Adjust spacing */
+}
+
+#deleteBtn {
+    width: 20%;
+    background-color: #d32f2f;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Hover effect */
+#deleteBtn:hover {
+    background-color: #b71c1c;
+    box-shadow: 0 6px 12px rgba(183, 28, 28, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Click effect */
+#deleteBtn:active {
+    background-color: #9a0007;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    transform: translateY(1px);
 }

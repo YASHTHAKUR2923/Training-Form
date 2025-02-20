@@ -10,15 +10,19 @@
 
     <!-- Navbar -->
     <nav>
-        <div class="logo">ERP System</div>
+        <div class="logo" ><h2 style="color: #ffffff;">TRAINING FORM </h2></div>
         <ul>
             <li><a href="#">Home</a></li>
             <li><a href="data.html">View Data</a></li>
+            <li><a href="admin.html">Dashboard</a></li>
+            <btn onclick="logout()" id="logbtn"
+            style="float:none; color: #ffffff; font-size: 15px; background-color: #04767e; margin: 10px; cursor: pointer; padding: 8px; border-radius: 8px; display: block; text-align: center;">
+            Logout</btn>
             
         </ul>
     </nav>
 
-    <h2>Training Form</h2>
+    <h2> Fill  Training Form</h2>
     <form id="trainingForm">
        
 
@@ -68,7 +72,7 @@
 
 <!-- Training Head Dropdown -->
 <label for="trainingHead">Training Head:</label>
-<select id="trainingHead" onchange="updateTopics()">
+<select id="trainingHead" required onchange="updateTopics()">
     <option value="" disabled selected>Select Training Head</option>
     <option value="Awareness">Awareness</option>
     <option value="Chemical Management System">Chemical Management System</option>
@@ -90,11 +94,11 @@
     <option value="Waste Management">Waste Management</option>
 </select>
 
-<br><br>
+<br>
 
 <!-- Training Topic Dropdown -->
 <label for="trainingTopic">Training Topic:</label>
-<select id="trainingTopic">
+<select id="trainingTopic"  required>
     <option value="" disabled selected>Select Training Topic</option>
 </select>
 
@@ -116,29 +120,17 @@
 
     <label for="referenceNo">Reference No:</label>
     <input type="text" id="referenceNo" readonly> <!-- Reference number is auto-filled -->
+
     
-    <label for="DataEnterBy">Data Enter By:</label>
-    <select id="DataEnterBy" required>
-        <option value="" disabled selected>Select Data Enter By</option>
-        <option value="AMIT TIWARI">AMIT TIWARI</option>
-        <option value="SANTOSH KUMAR MISHRA">SANTOSH KUMAR MISHRA</option>
-        <option value="VIJAY KUMAR">VIJAY KUMAR</option>
-        <option value="ASHIFA TABASSUM">ASHIFA TABASSUM</option>
-        <option value="PRAMOD KUMAR">PRAMOD KUMAR</option>
-        <option value="RAGHUVENDRA PANDEY">RAGHUVENDRA PANDEY</option>
-        <option value="ILMA PARVEEN">ILMA PARVEEN</option>
-        <option value="MOHAMMAD KALEEM BEG">MOHAMMAD KALEEM BEG</option>
-        <option value="NITIN KUMAR">NITIN KUMAR</option>
-        <option value="TANZEEM HUSAIN">TANZEEM HUSAIN</option>
-        <option value="JAMAL AHAMAD">JAMAL AHAMAD</option>
-        <option value="ARJUN KUMAR">ARJUN KUMAR</option>
-        <option value="SAMIA IQBAL">SAMIA IQBAL</option>
-        <option value="MOHD DANISH">MOHD DANISH</option>
-        <option value="other">Other</option>
-    </select>
+    <label for="dataenterby">Data Enter By:</label>
+    <input type="text" id="dataEnterBy" name="dataEnterBy" required>
+    
 
     <label for="employeeCode">Employee Code:</label>
     <input type="text" id="employeeCode" required>
+    
+
+
     
 
     <button type="submit" class="submit-button">Submit</button>
