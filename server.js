@@ -21,10 +21,10 @@ app.use(bodyParser.json());
 // POST - Save Form Data to Database
 app.post("/submit-form", async (req, res) => {
     try {
-        const { calendar, trainerName, otherTrainer, trainingDate, trainingTiming, trainingTimingEnd, trainingHead, trainingTopic, Location, referenceNo, employeeCode, dataEnterBy } = req.body;
+        const { calendar, trainerName, otherTrainer, trainingDate, trainingTiming, trainingTimingEnd, trainingHead, trainingTopic, Location, referenceNo, employeeCode, dataEnterBy,otherTrainingHead,otherTrainingTopic } = req.body;
         const result = await pool.query(
-            "INSERT INTO training (calendar, trainerName, otherTrainer, trainingDate, trainingTiming, trainingTimingEnd, trainingHead, trainingTopic, Location, referenceNo, employeeCode, dataEnterBy) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *",
-            [calendar, trainerName, otherTrainer, trainingDate, trainingTiming, trainingTimingEnd, trainingHead, trainingTopic, Location, referenceNo, employeeCode, dataEnterBy]
+            "INSERT INTO training (calendar, trainerName, otherTrainer, trainingDate, trainingTiming, trainingTimingEnd, trainingHead, trainingTopic, Location, referenceNo, employeeCode, dataEnterBy,otherTrainingHead,otherTrainingTopic) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *",
+            [calendar, trainerName, otherTrainer, trainingDate, trainingTiming, trainingTimingEnd, trainingHead, trainingTopic, Location, referenceNo, employeeCode, dataEnterBy,otherTrainingHead,otherTrainingTopic]
         );
         
         res.status(201).json(result.rows[0]);

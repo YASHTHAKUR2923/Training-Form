@@ -69,10 +69,9 @@
 
     <label for="trainingTimingEnd">Training End Time:</label>
     <input type="time" id="trainingTimingEnd" required>
-
 <!-- Training Head Dropdown -->
 <label for="trainingHead">Training Head:</label>
-<select id="trainingHead" required onchange="updateTopics()">
+<select id="trainingHead" required onchange="updateTopics(); toggleOtherInput('trainingHead', 'otherTrainingHead')">
     <option value="" disabled selected>Select Training Head</option>
     <option value="Awareness">Awareness</option>
     <option value="Chemical Management System">Chemical Management System</option>
@@ -92,15 +91,33 @@
     <option value="Soft skills">Soft skills</option>
     <option value="SOPs">SOPs</option>
     <option value="Waste Management">Waste Management</option>
+    <option value="Other">Other</option>
 </select>
+
+<!-- Input Box for Other Training Head -->
+<input type="text" id="otherTrainingHead" placeholder="Enter Other Training Head" style="display: none;" oninput="updateTopics()">
 
 <br>
 
 <!-- Training Topic Dropdown -->
 <label for="trainingTopic">Training Topic:</label>
-<select id="trainingTopic"  required>
+<select id="trainingTopic"  onchange="toggleOtherInput('trainingTopic', 'otherTrainingTopic')">
     <option value="" disabled selected>Select Training Topic</option>
 </select>
+
+<!-- Input Box for Other Training Topic -->
+<input type="text" id="otherTrainingTopic" placeholder="Enter Other Training Topic" style="display: none;">
+
+<br>
+
+<!-- Training Topic Dropdown -->
+<!-- <label for="trainingTopic">Training Topic:</label>
+<select id="trainingTopic" required onchange="toggleOtherInput('trainingTopic', 'otherTrainingTopic')">
+    <option value="" disabled selected>Select Training Topic</option>
+</select> -->
+
+<!-- Input Box for Other Training Topic -->
+<input type="text" id="otherTrainingTopic" placeholder="Enter Other Training Topic" style="display: none;">
 
 <!-- Location Dropdown -->
 <label for="Location">Location:</label>

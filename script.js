@@ -48,7 +48,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 trainingTiming: document.getElementById("trainingTiming").value,
                 trainingTimingEnd: document.getElementById("trainingTimingEnd").value,
                 trainingHead: document.getElementById("trainingHead").value,
+                otherTrainingHead: document.getElementById("otherTrainingHead").value,
                 trainingTopic: document.getElementById("trainingTopic").value,
+                otherTrainingTopic: document.getElementById("otherTrainingTopic").value,
                 Location: document.getElementById("Location").value,
                 referenceNo: document.getElementById("referenceNo").value,
                 employeeCode: document.getElementById("employeeCode").value,
@@ -104,7 +106,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>${entry.trainingtiming}</td>
                     <td>${entry.trainingtimingend}</td>
                     <td>${entry.traininghead}</td>
+                    <td>${entry.othertraininghead}</td>
                     <td>${entry.trainingtopic}</td>
+                    <td>${entry.othertrainingtopic}</td>
                     <td>${entry.location}</td>
                     <td>${entry.referenceno}</td>
                     <td>${employeeCodesCount} Codes</td>
@@ -243,7 +247,6 @@ function toggleOtherInput() {
 
 
 
-
 const topics = {
     "Awareness": [
         "Awareness of Environment Management system",
@@ -320,15 +323,41 @@ const topics = {
     ]
 };
 
+function toggleOtherInput(selectId, inputId) {
+    var select = document.getElementById(selectId);
+    var input = document.getElementById(inputId);
+
+    if (select.value === "Other") {
+        input.style.display = "block";
+        input.required = true;
+    } else {
+        input.style.display = "none";
+        input.required = false;
+    }
+}
+
 function updateTopics() {
     let headSelect = document.getElementById("trainingHead");
     let topicSelect = document.getElementById("trainingTopic");
     let selectedHead = headSelect.value;
+    let otherHeadInput = document.getElementById("otherTrainingHead").value.trim();
 
     // Clear previous options
     topicSelect.innerHTML = '<option value="" disabled selected>Select Training Topic</option>';
 
-    // Add relevant topics
+    // If "Other" is selected, allow the user to enter a custom Training Head
+    if (selectedHead === "Other" && otherHeadInput) {
+        topics[otherHeadInput] = topics[otherHeadInput] || [];
+        topics[otherHeadInput].forEach(topic => {
+            let option = document.createElement("option");
+            option.value = topic;
+            option.textContent = topic;
+            topicSelect.appendChild(option);
+        });
+        return;
+    }
+
+    // Add relevant topics if a predefined Training Head is selected
     if (topics[selectedHead]) {
         topics[selectedHead].forEach(topic => {
             let option = document.createElement("option");
@@ -337,8 +366,13 @@ function updateTopics() {
             topicSelect.appendChild(option);
         });
     }
-}
 
+    // Add "Other" option in Training Topic dropdown
+    let otherOption = document.createElement("option");
+    otherOption.value = "Other";
+    otherOption.textContent = "Other";
+    topicSelect.appendChild(otherOption);
+}
 
 
 
@@ -368,6 +402,7 @@ function toggleOtherLocation() {
 }
 
 
+
 function filterTrainer() {
     let input = document.getElementById("searchTrainer").value.toLowerCase();
     let table = document.getElementById("dataTable");
@@ -385,15 +420,22 @@ function filterTrainer() {
 
 
 function filterByMonth() {
-    let monthInput = document.getElementById("calendars").value; 
-    let selectedMonth = new Date(monthInput).toLocaleString('en-us', { month: 'short' }).toLowerCase(); // "feb" for February
+    let monthInput = document.getElementById("calendars").value;
+    if (!monthInput) return; // Prevent errors if no date is selected
+
+    let selectedMonth = new Date(monthInput).toLocaleString('en-us', { month: 'short' }).toLowerCase(); // e.g., "feb"
     let table = document.getElementById("dataTable");
     let rows = table.getElementsByTagName("tr");
 
     for (let i = 0; i < rows.length; i++) {
-        let referenceCell = rows[i].getElementsByTagName("td")[10]; // 11th column (Reference No)
+        let cells = rows[i].getElementsByTagName("td");
+        console.log("Total Columns in Row", i, ":", cells.length); // Debugging check
+
+        let referenceCell = cells[10]; // Ensure this is the correct column
         if (referenceCell) {
             let referenceText = referenceCell.textContent.toLowerCase();
+            console.log("Reference Code:", referenceText, "Checking against:", selectedMonth);
+
             rows[i].style.display = referenceText.startsWith(selectedMonth) ? "" : "none";
         }
     }
@@ -415,4 +457,6 @@ function logout() {
   
   // Load queries on page load
   window.onload = loadQueries;
+  
+
   
