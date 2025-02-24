@@ -35,11 +35,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const calendarInput = document.getElementById("calendar");
     const searchButton = document.getElementById("searchMonth");
     const exportButton = document.getElementById("exportMonth");
-    
-    
-    
-
-
 
     if (form) {
         form.addEventListener("submit", async function (event) {
@@ -60,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 referenceNo: document.getElementById("referenceNo").value,
                 employeeCode: document.getElementById("employeeCode").value,
                 dataEnterBy: document.getElementById("dataEnterBy").value  // Added this line
-                
+
             };
 
             try {
@@ -89,7 +84,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-   
+    // ...............................................................................................................................................
+
+
     async function fetchTableData(filterMonth = null) {
         try {
             const response = await fetch("http://localhost:5000/get-data");
@@ -97,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const role = localStorage.getItem("role");
 
             tableBody.innerHTML = "";
-            
+
 
             const filteredData = filterMonth
                 ? data.filter(entry => entry.calendar.startsWith(filterMonth)) // Match selected month
@@ -141,15 +138,13 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
 
-            
-    document.querySelectorAll(".delete-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            let id = this.getAttribute("data-id");
-            deleteRow(id);
-        });
-    });
 
-
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    let id = this.getAttribute("data-id");
+                    deleteRow(id);
+                });
+            });
 
 
         } catch (error) {
@@ -157,11 +152,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    
+    // ....................Delete function...................................................................................................
 
-
-    
-    
 
     function deleteRow(id) {
         if (confirm("Are you sure you want to delete this submission?")) {
@@ -176,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => console.error("Error deleting row:", error));
         }
     }
-
+    // ..................Export fucntion to excel.............................................................................................
 
     function exportMonthData() {
         if (!calendarInput.value) {
@@ -185,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         fetch("http://localhost:5000/get-data")
-            .then(response => response.json())  
+            .then(response => response.json())
             .then(data => {
                 let month = calendarInput.value;
                 let filteredData = data.filter(entry => entry.calendar.startsWith(month));
@@ -194,15 +186,47 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert("No data found for the selected month.");
                     return;
                 }
-                
 
-                let worksheet = XLSX.utils.json_to_sheet(filteredData);
+                // Format data for Excel
+                let formattedData = [];
+                filteredData.forEach(entry => {
+                    let employeeCodesArray = entry.employeecode.trim().replace(/,$/, "").split(",");
+
+                    // Create a separate row for each employee code
+                    employeeCodesArray.forEach(code => {
+                        formattedData.push({
+
+                            calendar: entry.calendar,
+                            trainerName: entry.trainername,
+                            otherTrainer: entry.othertrainer,
+                            trainingDate: entry.trainingdate,
+                            trainingStartTime: entry.trainingtiming,
+                            trainingEndTime: entry.trainingtimingend,
+                            trainingHead: entry.traininghead,
+                            otherTrainingHead: entry.othertraininghead,
+                            trainingTopic: entry.trainingtopic,
+                            otherTrainingTopic: entry.othertrainingtopic,
+                            location: entry.location,
+                            referenceNo: entry.referenceno,
+                            employeeCode: code.trim(),
+                            dataEnteredBy: entry.dataenterby
+                        });
+                    });
+                });
+
+                // Convert to worksheet
+                let worksheet = XLSX.utils.json_to_sheet(formattedData);
+
+                // Create a new workbook and append the sheet
                 let workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Data");
+
+                // Save the file
                 XLSX.writeFile(workbook, `Training_Data_${month}.xlsx`);
             })
             .catch(error => console.error("Error exporting data:", error));
     }
+
 
     searchButton.addEventListener("click", function () {
         if (!calendarInput.value) {
@@ -213,34 +237,37 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     exportButton.addEventListener("click", exportMonthData);
-    
-  
+
+
     fetchTableData(); // Load table on page load
 });
 
+// ..................REference No genetrate to Calender...............................................................................
 
 document.getElementById("calendar").addEventListener("change", function () {
     let selectedMonth = this.value; // Format: YYYY-MM
     if (selectedMonth) {
         let monthNames = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         ];
-        
+
         let year = selectedMonth.split("-")[0]; // Extract Year
         let monthIndex = parseInt(selectedMonth.split("-")[1], 10) - 1; // Convert to index (0-11)
         let monthName = monthNames[monthIndex]; // Get Month Name
-        
+
         // Generate a random number (you can modify logic for sequence)
-        let randomNum = Math.floor(1000 + Math.random() * 9000); 
-        
+        let randomNum = Math.floor(1000 + Math.random() * 9000);
+
         // Set Reference No in format "Month1234"
         document.getElementById("referenceNo").value = `${monthName}${randomNum}`;
     }
 });
 
 
-// other input fileds script
+
+
+// other trainer name input open 
 function toggleOtherInput() {
     var trainerSelect = document.getElementById("trainerName");
     var otherInputDiv = document.getElementById("otherTrainerDiv");
@@ -252,6 +279,7 @@ function toggleOtherInput() {
     }
 }
 
+// ........................Topics depend on the training head...............................................................................
 
 const topics = {
     "Awareness": [
@@ -329,6 +357,9 @@ const topics = {
     ]
 };
 
+
+// other input topic
+
 function toggleOtherInput(selectId, inputId) {
     var select = document.getElementById(selectId);
     var input = document.getElementById(inputId);
@@ -400,8 +431,8 @@ function toggleOtherLocation() {
 
 
 
-  // Logout functionality
-  function logout() {
+// Logout functionality
+function logout() {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("role");
     window.location.href = "login.html";
@@ -409,19 +440,19 @@ function toggleOtherLocation() {
 
 
 
-function filterTrainer() {
-    let input = document.getElementById("searchTrainer").value.toLowerCase();
-    let table = document.getElementById("dataTable");
-    let rows = table.getElementsByTagName("tr");
+// function filterTrainer() {
+//     let input = document.getElementById("searchTrainer").value.toLowerCase();
+//     let table = document.getElementById("dataTable");
+//     let rows = table.getElementsByTagName("tr");
 
-    for (let i = 0; i < rows.length; i++) {
-        let trainerCell = rows[i].getElementsByTagName("td")[2]; // 3rd column (Trainer Name)
-        if (trainerCell) {
-            let trainerName = trainerCell.textContent || trainerCell.innerText;
-            rows[i].style.display = trainerName.toLowerCase().includes(input) ? "" : "none";
-        }
-    }
-}
+//     for (let i = 0; i < rows.length; i++) {
+//         let trainerCell = rows[i].getElementsByTagName("td")[2]; 
+//         if (trainerCell) {
+//             let trainerName = trainerCell.textContent || trainerCell.innerText;
+//             rows[i].style.display = trainerName.toLowerCase().includes(input) ? "" : "none";
+//         }
+//     }
+// }
 
 
 
@@ -430,15 +461,14 @@ function logout() {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("role");
     window.location.href = "login.html";
-  }
-  
-  // Redirect if not logged in
-  if (localStorage.getItem("isLoggedIn") !== "true") {
-    window.location.href = "login.html";
-  }
-  
-  // Load queries on page load
-  window.onload = loadQueries;
-  
+}
 
-  
+// Redirect if not logged in
+if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "login.html";
+}
+
+// Load queries on page load
+window.onload = loadQueries;
+
+

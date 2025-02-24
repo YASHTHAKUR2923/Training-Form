@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <nav>
@@ -43,7 +45,7 @@
         function loadDashboardData() {
             let submissions = JSON.parse(localStorage.getItem("submissions")) || [];
             document.getElementById("totalSubmissions").innerText = submissions.length;
-            
+
             let trainerCounts = {};
             submissions.forEach(sub => {
                 trainerCounts[sub.trainerName] = (trainerCounts[sub.trainerName] || 0) + 1;
@@ -93,14 +95,15 @@
 
 
         document.addEventListener("DOMContentLoaded", function () {
-        const role = localStorage.getItem("role");
+            const role = localStorage.getItem("role");
 
-        if (role !== "admin") {
-            alert("Access Denied! Redirecting to Home Page.");
-            window.location.href = "index.html"; // Redirect non-admin users
-        }
-    });
+            if (role !== "admin") {
+                alert("Access Denied! Redirecting to Home Page.");
+                window.location.href = "index.html"; // Redirect non-admin users
+            }
+        });
     </script>
 
 </body>
+
 </html>
