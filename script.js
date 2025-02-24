@@ -32,6 +32,11 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("trainingForm");
     const tableBody = document.getElementById("dataTable");
+    const calendarInput = document.getElementById("calendar");
+    const searchButton = document.getElementById("searchMonth");
+    const exportButton = document.getElementById("exportMonth");
+    
+    
     
 
 
@@ -84,19 +89,27 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    async function fetchTableData() {
+   
+    async function fetchTableData(filterMonth = null) {
         try {
             const response = await fetch("http://localhost:5000/get-data");
             const data = await response.json();
-            const role = localStorage.getItem("role"); // Get user role
-    
+            const role = localStorage.getItem("role");
+
             tableBody.innerHTML = "";
-    
-            data.forEach((entry, index) => {
-                let employeeCodesArray = entry.employeecode.split(",");
-                let employeeCodesCount = employeeCodesArray.length;
+            
+
+            const filteredData = filterMonth
+                ? data.filter(entry => entry.calendar.startsWith(filterMonth)) // Match selected month
+                : data;
+
+            filteredData.forEach((entry, index) => {
+                let employeeCodesArray = entry.employeecode.trim().replace(/,$/, "").split(",");
+
+                let employeeCodesCount = employeeCodesArray.length; // Get count
+
                 let row = document.createElement("tr");
-    
+
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${entry.calendar}</td>
@@ -111,37 +124,44 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>${entry.othertrainingtopic}</td>
                     <td>${entry.location}</td>
                     <td>${entry.referenceno}</td>
-                    <td>${employeeCodesCount} Codes</td>
+                <td>${employeeCodesCount} Codes</td> <!-- Show count instead of listing codes -->
                     <td>${entry.dataenterby}</td>
-                    <td><button class="export-btn" data-index="${index}">Export</button></td>
+               
                     ${role === "admin" ? `<td><button class="delete-btn" data-id="${entry.id}">Delete</button></td>` : ""}
                 `;
-                
+
                 tableBody.appendChild(row);
             });
 
-            // 🔹 Attach Export Button Event Listeners
             document.querySelectorAll(".export-btn").forEach(button => {
                 button.addEventListener("click", function () {
                     let index = this.getAttribute("data-index");
-                    exportSingleRow(index);
+                    exportSingleRow(filteredData[index]);
                 });
             });
 
 
-            document.querySelectorAll(".delete-btn").forEach(button => {
-                button.addEventListener("click", function () {
-                    let id = this.getAttribute("data-id");
-                    deleteRow(id);
-                });
-            });
-                  
+            
+    document.querySelectorAll(".delete-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            let id = this.getAttribute("data-id");
+            deleteRow(id);
+        });
+    });
+
+
+
 
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     }
 
+    
+
+
+    
+    
 
     function deleteRow(id) {
         if (confirm("Are you sure you want to delete this submission?")) {
@@ -158,45 +178,43 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
+    function exportMonthData() {
+        if (!calendarInput.value) {
+            alert("Please select a month first!");
+            return;
+        }
 
-
-    
-  
-    function exportSingleRow(index) {
         fetch("http://localhost:5000/get-data")
-            .then(response => response.json())
+            .then(response => response.json())  
             .then(data => {
-                let entry = data[index];
-    
-                if (!entry) {
-                    alert("Invalid row selection!");
+                let month = calendarInput.value;
+                let filteredData = data.filter(entry => entry.calendar.startsWith(month));
+
+                if (filteredData.length === 0) {
+                    alert("No data found for the selected month.");
                     return;
                 }
-    
-                let employeeCodes = entry.employeecode.split(","); // Get the actual codes
-                let formattedData = employeeCodes.map(code => ({
-                    calendar: entry.calendar,
-                    trainerName: entry.trainername,
-                    otherTrainer: entry.othertrainer,
-                    trainingDate: entry.trainingdate,
-                    trainingTiming: entry.trainingtiming,
-                    trainingTimingEnd: entry.trainingtimingend,
-                    trainingHead: entry.traininghead,
-                    trainingTopic: entry.trainingtopic,
-                    Location: entry.location,
-                    referenceNo: entry.referenceno,
-                    dataenterby: entry.dataenterby,
-                    employeeCode: code.trim() // Each code in a separate row
-                }));
-    
-                let worksheet = XLSX.utils.json_to_sheet(formattedData);
+                
+
+                let worksheet = XLSX.utils.json_to_sheet(filteredData);
                 let workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Training Data");
-                XLSX.writeFile(workbook, `Training_Data_${index + 1}.xlsx`);
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Data");
+                XLSX.writeFile(workbook, `Training_Data_${month}.xlsx`);
             })
-            .catch(error => console.error("Error fetching data:", error));
+            .catch(error => console.error("Error exporting data:", error));
     }
 
+    searchButton.addEventListener("click", function () {
+        if (!calendarInput.value) {
+            alert("Please select a month first!");
+            return;
+        }
+        fetchTableData(calendarInput.value);
+    });
+
+    exportButton.addEventListener("click", exportMonthData);
+    
+  
     fetchTableData(); // Load table on page load
 });
 
@@ -222,10 +240,6 @@ document.getElementById("calendar").addEventListener("change", function () {
 });
 
 
-
-
-
-
 // other input fileds script
 function toggleOtherInput() {
     var trainerSelect = document.getElementById("trainerName");
@@ -237,14 +251,6 @@ function toggleOtherInput() {
         otherInputDiv.style.display = "none";   // Hide input field
     }
 }
-
-
-
-
-
-
-
-
 
 
 const topics = {
@@ -413,30 +419,6 @@ function filterTrainer() {
         if (trainerCell) {
             let trainerName = trainerCell.textContent || trainerCell.innerText;
             rows[i].style.display = trainerName.toLowerCase().includes(input) ? "" : "none";
-        }
-    }
-}
-
-
-
-function filterByMonth() {
-    let monthInput = document.getElementById("calendars").value;
-    if (!monthInput) return; // Prevent errors if no date is selected
-
-    let selectedMonth = new Date(monthInput).toLocaleString('en-us', { month: 'short' }).toLowerCase(); // e.g., "feb"
-    let table = document.getElementById("dataTable");
-    let rows = table.getElementsByTagName("tr");
-
-    for (let i = 0; i < rows.length; i++) {
-        let cells = rows[i].getElementsByTagName("td");
-        console.log("Total Columns in Row", i, ":", cells.length); // Debugging check
-
-        let referenceCell = cells[10]; // Ensure this is the correct column
-        if (referenceCell) {
-            let referenceText = referenceCell.textContent.toLowerCase();
-            console.log("Reference Code:", referenceText, "Checking against:", selectedMonth);
-
-            rows[i].style.display = referenceText.startsWith(selectedMonth) ? "" : "none";
         }
     }
 }

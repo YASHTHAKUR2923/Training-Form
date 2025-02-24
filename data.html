@@ -23,13 +23,12 @@
     <h2>Training Form Data</h2>
 
 
-   
-    <!-- Search Filter -->
-    <div class="input-container">
-        <!-- <input type="text" id="searchTrainer" placeholder="Search Trainer Name"> -->
-        
-        <input type="month" id="calendars" required onchange="filterByMonth()">
-    </div>
+    <label for="calendar">Calendar:</label>
+    <input type="month" id="calendar" required>
+    <button id="searchMonth">Search</button>
+    <button id="exportMonth">Export </button>
+    
+ 
     
 
     <table border="1">
@@ -50,7 +49,7 @@
                 <th>Reference No</th>
                 <th>Employee Code</th>
                 <th>Data Enter By</th>
-                <th>Export</th>
+                <!-- <th>Export</th> -->
                 <th>action</th>
                
             </tr>
