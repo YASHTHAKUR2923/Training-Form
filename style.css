@@ -339,6 +339,7 @@ canvas {
 
 #deleteBtn {
     width: 20%;
+    height: 50px;
     background-color: #d32f2f;
     color: white;
     padding: 12px 20px;
